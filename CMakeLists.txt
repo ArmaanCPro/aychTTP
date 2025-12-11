@@ -1,15 +1,9 @@
 cmake_minimum_required(VERSION 3.30)
 
-set(CMAKE_EXPERIMENTAL_CXX_MODULE_STD ON)
-set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "d0edc3af-4c50-42ea-a356-e2862fe7a444")
-set(CMAKE_CXX_MODULE_STD 1)
-#set(CMAKE_CXX_STANDARD_REQUIRED True)
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_SCAN_FOR_MODULES ON)
 
 
 # ---- Project
@@ -22,11 +16,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 add_executable(${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME} PRIVATE
-    src/main.cpp
-    src/example_module.cpp
-)
-target_sources(${PROJECT_NAME} PUBLIC FILE_SET CXX_MODULES FILES
-    src/example_module.cppm
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
