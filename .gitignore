@@ -1,0 +1,13 @@
+.cache/
+.vs/
+.vscode/
+.idea/
+build/
+cmake-build-*/
+bin/
+cache/
+
+CMakeUserPresets.json
+.clangd
+compile_commands.json
+

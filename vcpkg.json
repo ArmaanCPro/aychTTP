@@ -1,0 +1,9 @@
+{
+  "name": "fenlang",
+  "version-semver": "0.1.0",
+  "dependencies": [
+    "boost-asio"
+  ],
+  "builtin-baseline": "40337e6ea1bdb61ca041f9b927d7dfef9712b5f9"
+}
+
