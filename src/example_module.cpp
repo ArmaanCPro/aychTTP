@@ -1,6 +1,6 @@
 module;
 
-#include <print>
+import std;
 
 module example_module;
 
