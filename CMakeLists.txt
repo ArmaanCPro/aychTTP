@@ -17,6 +17,10 @@ add_executable(${PROJECT_NAME})
 
 target_sources(${PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/tcp_server.cpp"
+
+    PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/tcp_server.h"
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
@@ -32,7 +36,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Boost::asio)
 # ---- Compiler Flags
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    INTERPROCEDURAL_OPTIMIZATION ON
+    INTERPROCEDURAL_OPTIMIZATION OFF
 )
 
 if (ENABLE_ASAN STREQUAL "ON")
