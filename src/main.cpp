@@ -1,7 +1,6 @@
 #include <iostream>
 #include "tcp_server.h"
 
-
 static constexpr auto port = 3000u;
 
 int main()
@@ -11,7 +10,7 @@ int main()
         aych::tcp_server server(port);
         for (;;)
         {
-            server.Run();
+            server.run();
         }
     }
     catch (std::exception& e)

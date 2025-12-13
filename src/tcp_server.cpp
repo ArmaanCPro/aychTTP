@@ -55,12 +55,11 @@ namespace aych
     {
     }
 
-    void tcp_server::Run()
+    void tcp_server::run()
     {
         tcp::socket socket(m_IoContext);
-        m_Acceptor.accept(socket);
 
+        m_Acceptor.accept(socket);
         handler(socket);
-        //std::jthread t(handler, std::ref(socket));
     }
 } // namespace aych

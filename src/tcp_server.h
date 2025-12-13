@@ -12,8 +12,6 @@ namespace aych
         std::string method;
         std::string path;
         std::string version;
-        std::unordered_map<std::string, std::string> headers;
-        std::string body;
     };
 
     class tcp_server
@@ -21,7 +19,7 @@ namespace aych
     public:
         tcp_server(uint32_t port);
 
-        void Run();
+        void run();
     private:
         boost::asio::io_context m_IoContext;
         tcp::acceptor m_Acceptor;
