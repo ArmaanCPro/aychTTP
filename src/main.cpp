@@ -8,10 +8,8 @@ int main()
     try
     {
         aych::tcp_server server(port);
-        for (;;)
-        {
-            server.run();
-        }
+
+        server.run();
     }
     catch (std::exception& e)
     {

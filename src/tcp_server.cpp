@@ -4,6 +4,12 @@
 #include <thread>
 #include "response_handler.h"
 
+#include <coroutine>
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/use_awaitable.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+
 using namespace std::literals;
 
 namespace
@@ -19,12 +25,12 @@ namespace
 
     using boost::asio::ip::tcp;
 
-    void handler(tcp::socket& socket)
+    boost::asio::awaitable<void> handler(tcp::socket socket)
     {
         aych::HttpRequest request;
 
         boost::asio::streambuf request_buffer;
-        boost::asio::read_until(socket, request_buffer, "\r\n\r\n");
+        co_await boost::asio::async_read_until(socket, request_buffer, "\r\n\r\n", boost::asio::use_awaitable);
         std::istream request_stream(&request_buffer);
 
         // parse request line
@@ -33,12 +39,13 @@ namespace
         // CORS preflight response
         if (request.method == "OPTIONS")
         {
-            boost::asio::write(socket, boost::asio::buffer(CORS_RESPONSE));
-            return;
+            co_await boost::asio::async_write(socket, boost::asio::buffer(CORS_RESPONSE), boost::asio::use_awaitable);
+            co_return;
         }
 
         std::cout << request.method << " " << request.path << " " << request.version << std::endl;
 
+        // TODO make async
         aych::response_handler::handle(socket, request);
 
         boost::system::error_code ignored_error;
@@ -57,9 +64,18 @@ namespace aych
 
     void tcp_server::run()
     {
-        tcp::socket socket(m_IoContext);
+        boost::asio::co_spawn(m_IoContext,
+            [this]() -> boost::asio::awaitable<void>
+            {
+                for (;;)
+                {
+                    tcp::socket socket(m_IoContext);
+                    co_await m_Acceptor.async_accept(socket, boost::asio::use_awaitable);
 
-        m_Acceptor.accept(socket);
-        handler(socket);
+                    boost::asio::co_spawn(m_IoContext, handler(std::move(socket)), boost::asio::detached);
+                }
+            }, boost::asio::detached);
+
+        m_IoContext.run();
     }
 } // namespace aych
