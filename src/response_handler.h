@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <boost/asio/awaitable.hpp>
 
 namespace aych
 {
@@ -9,6 +10,6 @@ namespace aych
 
     namespace response_handler
     {
-        auto handle(tcp::socket& socket, const HttpRequest& request) -> void;
+        auto handle(tcp::socket& socket, const HttpRequest& request) -> boost::asio::awaitable<void>;
     };
 }

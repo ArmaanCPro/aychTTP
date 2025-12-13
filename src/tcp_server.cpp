@@ -45,8 +45,7 @@ namespace
 
         std::cout << request.method << " " << request.path << " " << request.version << std::endl;
 
-        // TODO make async
-        aych::response_handler::handle(socket, request);
+        co_await aych::response_handler::handle(socket, request);
 
         boost::system::error_code ignored_error;
         socket.shutdown(tcp::socket::shutdown_both, ignored_error);
