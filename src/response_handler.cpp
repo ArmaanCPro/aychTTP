@@ -81,14 +81,17 @@ namespace aych
         };
     } // namespace
 
-    response_handler::response_handler(tcp::socket& socket, const HttpRequest& request)
+    namespace response_handler
     {
-        if (!method_handlers.contains(request.method) || !get_path_handlers.contains(request.path))
+        auto handle(tcp::socket& socket, const HttpRequest& request) -> void
         {
-            const HttpResponse response{request.version, "404 Not Found", "Not Found"};
-            response.Write(socket);
-            return;
+            if (!method_handlers.contains(request.method) || !get_path_handlers.contains(request.path))
+            {
+                const HttpResponse response{request.version, "404 Not Found", "Not Found"};
+                response.Write(socket);
+                return;
+            }
+            method_handlers.at(request.method)(socket, request);
         }
-        method_handlers.at(request.method)(socket, request);
-    }
+    } // namespace response_handler
 } // namespace aych

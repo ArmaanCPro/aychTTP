@@ -7,9 +7,8 @@ namespace aych
     struct HttpRequest;
     using boost::asio::ip::tcp;
 
-    class response_handler
+    namespace response_handler
     {
-    public:
-        response_handler(tcp::socket& socket, const HttpRequest& request);
+        auto handle(tcp::socket& socket, const HttpRequest& request) -> void;
     };
 }

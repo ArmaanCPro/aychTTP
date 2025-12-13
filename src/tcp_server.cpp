@@ -39,7 +39,7 @@ namespace
 
         std::cout << request.method << " " << request.path << " " << request.version << std::endl;
 
-        aych::response_handler response_handler(socket, request);
+        aych::response_handler::handle(socket, request);
 
         boost::system::error_code ignored_error;
         socket.shutdown(tcp::socket::shutdown_both, ignored_error);
