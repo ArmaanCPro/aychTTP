@@ -74,8 +74,9 @@ target_compile_options(aychTTP PRIVATE
 )
 
 add_custom_command(TARGET aychTTP POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_SOURCE_DIR}/test_client"
-    $<TARGET_FILE_DIR:aychTTP>/test_client
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        "${CMAKE_SOURCE_DIR}/test_client"
+        "$<TARGET_FILE_DIR:aychTTP>/test_client"
+        COMMENT "Copying test_client to binary directory."
     VERBATIM
 )
