@@ -11,8 +11,9 @@ It is also a use-case for a manually written HTTP server.
 HTMX is also a client (alongside a browser, of course), so it's nice not to have to write an HTTP client myself as well.
 CORS responses are interesting, as usually you don't have to deal with them if you're writing your own HTTP client.
 
-To run the server, just build and run the project. Make sure you copy the test_client directory into the same directory as the executable (bin/debug/ or bin/release/).
+To run the server, just build and run the project. If you edited the test_client without rebuilding the server, you'll need to copy the new files to the build directory.
 Then, open http://localhost:3000/ in your browser.
+No hot reloading is supported.
 
 To add more routes, check the `response_handler.h` and `response_handler.cpp` files.
 
