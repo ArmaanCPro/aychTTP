@@ -34,6 +34,15 @@ target_include_directories(aychTTP PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 find_package(Boost REQUIRED COMPONENTS asio)
 target_link_libraries(aychTTP PRIVATE Boost::asio)
 
+# link liburing on linux for Boost.Asio stream_file
+if (UNIX AND NOT APPLE)
+    include(FindPkgConfig)
+    pkg_check_modules(liburing REQUIRED IMPORTED_TARGET GLOBAL liburing>=2.0)
+
+    target_link_libraries(aychTTP PRIVATE PkgConfig::liburing)
+    target_compile_definitions(aychTTP PRIVATE BOOST_ASIO_HAS_IO_URING)
+endif ()
+
 
 # ---- Compiler Flags
 
@@ -62,7 +71,7 @@ if (ENABLE_ASAN STREQUAL "ON")
 endif ()
 
 target_compile_definitions(aychTTP PRIVATE
-        $<$<BOOL:${WIN32}>:NOMINMAX;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN32_WINDOWS>
+        $<$<BOOL:${WIN32}>:NOMINMAX;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN32_WINNT=0x0A00>
 )
 
 target_compile_options(aychTTP PRIVATE

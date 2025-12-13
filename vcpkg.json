@@ -7,6 +7,10 @@
       "features": [
         "spawn"
       ]
+    },
+    {
+      "name": "liburing",
+      "platform": "linux"
     }
   ],
   "builtin-baseline": "40337e6ea1bdb61ca041f9b927d7dfef9712b5f9"

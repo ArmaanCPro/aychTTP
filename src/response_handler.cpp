@@ -7,6 +7,8 @@
 #include <format>
 #include <fstream>
 
+#include <boost/asio/stream_file.hpp>
+
 namespace aych
 {
     namespace
@@ -38,19 +40,28 @@ namespace aych
         const std::unordered_map<std::string_view, path_handler_fn> get_path_handlers = {
             {
                 "/", [](tcp::socket& socket, const HttpRequest& request) -> boost::asio::awaitable<void> {
-                    std::ifstream indexFile("test_client/client.html", std::ios::binary | std::ios::ate);
-                    if (!indexFile.is_open() || !indexFile.good())
+                    boost::asio::stream_file file(socket.get_executor());
+
+                    boost::system::error_code ec;
+                    file.open("test_client/client.html", boost::asio::stream_file::read_only, ec);
+
+                    if (ec)
                     {
                         const HttpResponse response{request.version,
-                            "500 Internal Server Error", "Failed to open client.html"};
+                            "500 Internal Server Error",
+                            "Failed to open client.html\n" + ec.message()};
                         co_await response.Write(socket);
                         co_return;
                     }
 
-                    const auto size = indexFile.tellg();
+                    const auto size = file.seek(0, boost::asio::stream_file::seek_end);
+                    file.seek(0, boost::asio::stream_file::seek_set);
+
                     std::string buffer(size, '\0');
-                    indexFile.seekg(0);
-                    indexFile.read(buffer.data(), size);
+                    buffer.resize(size);
+
+                    co_await boost::asio::async_read(file, boost::asio::buffer(buffer),
+                        boost::asio::use_awaitable);
 
                     const HttpResponse response{
                         request.version, "200 OK",
