@@ -7,6 +7,15 @@ namespace aych
 {
     using boost::asio::ip::tcp;
 
+    struct HttpRequest
+    {
+        std::string method;
+        std::string path;
+        std::string version;
+        std::unordered_map<std::string, std::string> headers;
+        std::string body;
+    };
+
     class tcp_server
     {
     public:

@@ -3,14 +3,16 @@
 <head>
     <title>HTMX Client</title>
     <base href="http://localhost:3000/">
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
 </head>
 
 <body>
 
-    <button hx-get="/data" hx-request='{"noHeaders": true}' hx-trigger="click" hx-swap="outerHTML">
-        Click me
+    <button hx-get="/data" hx-target="#time" hx-trigger="click" hx-swap="innerHTML">
+        Get Time
     </button>
+
+    <div id="time">Waiting for button click</div>
 
 </body>
 </html>
