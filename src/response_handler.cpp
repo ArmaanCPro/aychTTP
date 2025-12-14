@@ -9,6 +9,14 @@
 
 #include <boost/asio/stream_file.hpp>
 
+#include <nlohmann/json.hpp>
+
+// inja has a warning with msvc
+#pragma warning(push)
+#pragma warning(disable: 4702)
+#include <inja/inja.hpp>
+#pragma warning(pop)
+
 using namespace std::literals;
 
 namespace aych
@@ -97,7 +105,7 @@ namespace aych
                 }
             },
             {
-                "/data", [](tcp::socket& socket, const HttpRequest& request) -> boost::asio::awaitable<HttpResponse> {
+                "/time", [](tcp::socket& socket, const HttpRequest& request) -> boost::asio::awaitable<HttpResponse> {
                     if (request.method != "GET")
                     {
                         const auto response = HttpResponse{}
@@ -107,13 +115,16 @@ namespace aych
                         co_return response;
                     }
 
-                    const auto currentTime = std::chrono::system_clock::now();
-                    const auto timeString = std::format("{:%Y-%m-%d %H:%M:%S}", currentTime);
+                    nlohmann::json vm;
+                    vm["time"] = std::format("{:%Y-%m-%d %H:%M:%S}", std::chrono::system_clock::now());
+
+                    inja::Environment env;
+                    const auto html = env.render_file("templates/time.html", vm);
 
                     const auto response = HttpResponse{}
                         .set_version(request.version)
                         .set_status(200, "OK")
-                        .set_body(timeString);
+                        .set_body(html);
 
                     co_return response;
                 }

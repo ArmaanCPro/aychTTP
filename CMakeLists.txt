@@ -33,7 +33,9 @@ target_include_directories(aychTTP PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 # ---- Dependencies
 
 find_package(Boost REQUIRED COMPONENTS asio)
-target_link_libraries(aychTTP PRIVATE Boost::asio)
+find_package(inja CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+target_link_libraries(aychTTP PRIVATE Boost::asio pantor::inja nlohmann_json::nlohmann_json)
 
 # link liburing on linux for Boost.Asio stream_file
 if (UNIX AND NOT APPLE)
@@ -89,4 +91,12 @@ add_custom_command(TARGET aychTTP POST_BUILD
         "$<TARGET_FILE_DIR:aychTTP>/test_client"
         COMMENT "Copying test_client to binary directory."
     VERBATIM
+)
+
+add_custom_command(TARGET aychTTP POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        "${CMAKE_SOURCE_DIR}/src/templates"
+        "$<TARGET_FILE_DIR:aychTTP>/templates"
+        COMMENT "Copying templates to binary directory."
+        VERBATIM
 )

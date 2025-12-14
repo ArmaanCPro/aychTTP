@@ -11,7 +11,9 @@
     {
       "name": "liburing",
       "platform": "linux"
-    }
+    },
+    "inja",
+    "nlohmann-json"
   ],
   "builtin-baseline": "40337e6ea1bdb61ca041f9b927d7dfef9712b5f9"
 }
