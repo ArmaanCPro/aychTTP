@@ -1,12 +1,14 @@
-module;
+#include "tcp_server.h"
 
-#include "asio_helper.h"
 #include <iostream>
+#include <thread>
+#include "response_handler.h"
+
 #include <coroutine>
-
-module aych;
-
-//import :response_handler;
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/use_awaitable.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 
 using namespace std::literals;
 
@@ -61,7 +63,18 @@ namespace aych
 
     void tcp_server::run()
     {
-        spawn_server_loop(m_IoContext, m_Acceptor, handler);
+        boost::asio::co_spawn(m_IoContext,
+            [this]() -> boost::asio::awaitable<void>
+            {
+                for (;;)
+                {
+                    tcp::socket socket(m_IoContext);
+                    co_await m_Acceptor.async_accept(socket, boost::asio::use_awaitable);
+
+                    boost::asio::co_spawn(m_IoContext, handler(std::move(socket)), boost::asio::detached);
+                }
+            }, boost::asio::detached);
+
         m_IoContext.run();
     }
 } // namespace aych
