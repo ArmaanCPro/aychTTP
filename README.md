@@ -1,9 +1,18 @@
 # aychTTP
 
-C++ HTTP server primarily for HTMX. 
+C++ HTTP server primarily for HTMX.
+
+There's a suprisingly low number of HTMX servers written in low-level C++. Or HTTP servers in general. Most that I've seen use something like Drogon or Boost.Beast (both are phenomenal libraries).
+There's a few features that are pretty important still left to implement in this project, templates via Inja being at the top of that list (for now).
+
+This repo serves as an example of how low-level networking concepts are still highly relevant for web development.
+Sure, for ergonomics you probably don't want to use C++, even GoLang would be better.
+But, you can certainly learn much more about how the web actually works by using less conveniant APIs.
+And, who knows, maybe the performance could be better than the most recent JS framework!
+
 Uses Boost.Asio for networking. Asio gives a nice level of control.
 It's much more portable than OS-specific sockets libraries. It also has a much nicer API.
-Boost.Beast or other higher level HTTP libraries are better choices for production usage, 
+Boost.Beast or other higher level HTTP libraries are better choices for production usage,
 but for learning's sake it's nice to have a lower-level library like asio.
 
 HTMX is a phenomenal library in the modern sea of JS frameworks.
@@ -26,5 +35,5 @@ Use one of the presets! It enables the vcpkg integration as long as `VCPKG_ROOT`
 i.e.
 - `cmake --preset debug` && `cmake --build --preset debug-build`
 - `cmake --preset release` && `cmake --build --preset release-build`
-- `cmake --preset release -G "Visual Studio 19 2026"` && `cmake --build --preset release-build`
+- `cmake --preset release -G "Visual Studio 18 2026"` && `cmake --build --preset release-build`
 - `cmake --preset release -DCMAKE_CXX_COMPILER=clang++` && `cmake --build --preset release-build`
