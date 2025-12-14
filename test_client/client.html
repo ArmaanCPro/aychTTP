@@ -2,17 +2,67 @@
 <html>
 <head>
     <title>HTMX Client</title>
-    <base href="http://localhost:3000/">
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
+            integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
+            crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <style>
+        .htmx-indicator { display: none; }
+        .htmx-request .htmx-indicator { display: inline-flex; }
+        .htmx-request.htmx-indicator { display: inline-flex; }
+    </style>
 </head>
 
-<body>
+<body class="min-h-screen bg-slate-950 text-slate-100">
 
-    <button hx-get="/data" hx-target="#time" hx-trigger="click" hx-swap="innerHTML">
-        Get Time
-    </button>
+<main class="mx-auto max-w-2xl px-6 py-12">
+    <header class="mb-8">
+        <h1 class="text-4xl font-bold">HTMX Client</h1>
+        <p class="mt-2 text-slate-300">
+            Click the button to fetch the current server time from <code class="rounded bg-white/10 px-1.5 py-0.5">/data</code>.
+        </p>
+    </header>
 
-    <div id="time">Waiting for button click</div>
+    <section class="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg shadow-black/20">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <button
+                    class="inline-flex items-center justify-center rounded-xl bg-indigo-500 px-4 py-2.5 font-medium text-white shadow
+                           shadow-indigo-500/20 transition hover:bg-indigo-400 active:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    hx-get="/data"
+                    hx-target="#time"
+                    hx-trigger="click"
+                    hx-swap="innerHTML"
+                    hx-indicator="#loading"
+            >
+                Get Time
+            </button>
+
+            <div id="loading" class="htmx-indicator text-sm text-slate-300">
+                Loading…
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <div class="text-sm font-medium text-slate-300">Server time</div>
+            <div
+                    id="time"
+                    class="mt-2 rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 font-mono text-lg text-slate-100"
+            >
+                Waiting for button click
+            </div>
+        </div>
+    </section>
+
+    <footer class="mt-10 text-xs text-slate-400">
+        Tip: This project uses Tailwind from a CDN. Other than that, there is no JS! Just HTMX and a C++ backend.
+    </footer>
+
+</main>
 
 </body>
 </html>
