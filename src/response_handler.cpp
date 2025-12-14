@@ -2,12 +2,14 @@
 #include "tcp_server.h"
 
 #include <unordered_map>
+#include <map>
 #include <string_view>
 #include <chrono>
 #include <format>
-#include <fstream>
 
 #include <boost/asio/stream_file.hpp>
+
+using namespace std::literals;
 
 namespace aych
 {
@@ -15,37 +17,52 @@ namespace aych
     {
         struct HttpResponse
         {
-            std::string version;
-            std::string status_line;
-            std::string body;
-            std::string content_type = "text/plain; charset=utf-8";
+        private:
+            std::string version{};
+            int status{0};
+            std::string status_line{};
+            std::string body{};
+            mutable std::map<std::string, std::string> headers{};
+        public:
+            HttpResponse() = default;
 
-            auto Write(tcp::socket& socket) const -> boost::asio::awaitable<void>
+            auto set_version(std::string new_version) -> HttpResponse& { this->version = std::move(new_version); return *this; }
+            auto set_status(int new_status, std::string new_status_line) -> HttpResponse& { this->status = new_status; this->status_line = std::move(new_status_line); return *this; }
+            auto set_header(std::string header, std::string value) -> HttpResponse& { headers[std::move(header)] = std::move(value); return *this; }
+            auto set_body(std::string new_body) -> HttpResponse& { this->body = std::move(new_body); return *this; }
+
+            auto write(tcp::socket& socket) const -> boost::asio::awaitable<void>
             {
-                const std::string headers =
-                    version + ' ' + status_line + "\r\n"
-                    "Access-Control-Allow-Origin: *\r\n"
-                    "Content-Type: " + content_type + "\r\n"
-                    "Content-Length: " + std::to_string(body.size()) + "\r\n"
-                    "Connection: close\r\n"
-                    "\r\n";
+                std::string message = version + ' ' + std::to_string(status) + ' ' + status_line + "\r\n";
 
-                const std::string message = headers + body;
+                if (!headers.contains("Content-Type"))
+                    headers["Content-Type"] = "text/plain; charset=utf-8";
+                if (!headers.contains("Content-Length"))
+                    headers["Content-Length"] = std::to_string(body.size());
+                if (!headers.contains("Access-Control-Allow-Origin"))
+                    headers["Access-Control-Allow-Origin"] = "*";
+
+                for (const auto& [key, value] : headers)
+                {
+                    message += key + ": "s.append(value).append("\r\n");
+                }
+                message += "\r\n" + body;
 
                 co_await boost::asio::async_write(socket, boost::asio::buffer(message), boost::asio::use_awaitable);
             }
         };
 
-        using path_handler_fn = boost::asio::awaitable<void> (*)(tcp::socket&, const HttpRequest&);
+        using path_handler_fn = boost::asio::awaitable<HttpResponse> (*)(tcp::socket&, const HttpRequest&);
         const std::unordered_map<std::string_view, path_handler_fn> path_handlers = {
             {
-                "/", [](tcp::socket& socket, const HttpRequest& request) -> boost::asio::awaitable<void> {
+                "/", [](tcp::socket& socket, const HttpRequest& request) -> boost::asio::awaitable<HttpResponse> {
 
                     if (request.method != "GET")
                     {
-                        const HttpResponse response{request.version, "405 Method Not Allowed", "Method Not Allowed"};
-                        co_await response.Write(socket);
-                        co_return;
+                        const auto response = HttpResponse{}.set_version(request.version)
+                            .set_status(405, "Method Not Allowed")
+                            .set_body("Method Not Allowed");
+                        co_return response;
                     }
 
                     boost::asio::stream_file file(socket.get_executor());
@@ -55,11 +72,10 @@ namespace aych
 
                     if (ec)
                     {
-                        const HttpResponse response{request.version,
-                            "500 Internal Server Error",
-                            "Failed to open client.html\n" + ec.message()};
-                        co_await response.Write(socket);
-                        co_return;
+                        const auto response = HttpResponse{}.set_version(request.version)
+                            .set_status(500, "Internal Server Error")
+                            .set_body("Failed to open client.html\n" + ec.message());
+                        co_return response;
                     }
 
                     const auto size = file.seek(0, boost::asio::stream_file::seek_end);
@@ -71,29 +87,35 @@ namespace aych
                     co_await boost::asio::async_read(file, boost::asio::buffer(buffer),
                         boost::asio::use_awaitable);
 
-                    const HttpResponse response{
-                        request.version, "200 OK",
-                        buffer, "text/html; charset=utf-8"};
+                    const auto response = HttpResponse{}
+                        .set_version(request.version)
+                        .set_status(200, "OK")
+                        .set_body(buffer)
+                        .set_header("Content-Type", "text/html; charset=utf-8");
 
-                    co_await response.Write(socket);
+                    co_return response;
                 }
             },
             {
-                "/data", [](tcp::socket& socket, const HttpRequest& request) -> boost::asio::awaitable<void> {
+                "/data", [](tcp::socket& socket, const HttpRequest& request) -> boost::asio::awaitable<HttpResponse> {
                     if (request.method != "GET")
                     {
-                        const HttpResponse response{request.version, "405 Method Not Allowed", "Method Not Allowed"};
-                        co_await response.Write(socket);
-                        co_return;
+                        const auto response = HttpResponse{}
+                            .set_version(request.version)
+                            .set_status(405, "Method Not Allowed")
+                            .set_body("Method Not Allowed");
+                        co_return response;
                     }
 
                     const auto currentTime = std::chrono::system_clock::now();
                     const auto timeString = std::format("{:%Y-%m-%d %H:%M:%S}", currentTime);
-                    const HttpResponse response{
-                        request.version, "200 OK",
-                        timeString};
 
-                    co_await response.Write(socket);
+                    const auto response = HttpResponse{}
+                        .set_version(request.version)
+                        .set_status(200, "OK")
+                        .set_body(timeString);
+
+                    co_return response;
                 }
             }
         };
@@ -105,11 +127,16 @@ namespace aych
         {
             if (!path_handlers.contains(request.path))
             {
-                const HttpResponse response{request.version, "404 Not Found", "Not Found"};
-                co_await response.Write(socket);
+                const auto response = HttpResponse{}
+                    .set_version(request.version)
+                    .set_status(404, "Not Found")
+                    .set_body("Not Found");
+                co_await response.write(socket);
                 co_return;
             }
-            co_await path_handlers.at(request.path)(socket, request);
+
+            auto response = co_await path_handlers.at(request.path)(socket, request);
+            co_await response.write(socket);
         }
     } // namespace response_handler
 } // namespace aych

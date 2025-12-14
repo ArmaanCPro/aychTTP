@@ -1,7 +1,6 @@
 #include "tcp_server.h"
 
-#include <iostream>
-#include <thread>
+#include <print>
 
 #include "response_handler.h"
 #include "http_request.h"
@@ -45,7 +44,7 @@ namespace
             co_return;
         }
 
-        std::cout << request.method << " " << request.path << " " << request.version << std::endl;
+        std::println("{} {} {}", request.method, request.path, request.version);
 
         co_await aych::response_handler::handle(socket, request);
 
