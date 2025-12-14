@@ -37,9 +37,17 @@ namespace aych
         };
 
         using path_handler_fn = boost::asio::awaitable<void> (*)(tcp::socket&, const HttpRequest&);
-        const std::unordered_map<std::string_view, path_handler_fn> get_path_handlers = {
+        const std::unordered_map<std::string_view, path_handler_fn> path_handlers = {
             {
                 "/", [](tcp::socket& socket, const HttpRequest& request) -> boost::asio::awaitable<void> {
+
+                    if (request.method != "GET")
+                    {
+                        const HttpResponse response{request.version, "405 Method Not Allowed", "Method Not Allowed"};
+                        co_await response.Write(socket);
+                        co_return;
+                    }
+
                     boost::asio::stream_file file(socket.get_executor());
 
                     boost::system::error_code ec;
@@ -72,6 +80,13 @@ namespace aych
             },
             {
                 "/data", [](tcp::socket& socket, const HttpRequest& request) -> boost::asio::awaitable<void> {
+                    if (request.method != "GET")
+                    {
+                        const HttpResponse response{request.version, "405 Method Not Allowed", "Method Not Allowed"};
+                        co_await response.Write(socket);
+                        co_return;
+                    }
+
                     const auto currentTime = std::chrono::system_clock::now();
                     const auto timeString = std::format("{:%Y-%m-%d %H:%M:%S}", currentTime);
                     const HttpResponse response{
@@ -82,28 +97,19 @@ namespace aych
                 }
             }
         };
-
-        using method_handler_fn = boost::asio::awaitable<void> (*)(tcp::socket&, const HttpRequest&);
-        const std::unordered_map<std::string, method_handler_fn> method_handlers = {
-            {
-                "GET", [](tcp::socket& socket, const HttpRequest& request) -> boost::asio::awaitable<void> {
-                    co_await get_path_handlers.at(request.path)(socket, request);
-                }
-            },
-        };
     } // namespace
 
     namespace response_handler
     {
         auto handle(tcp::socket& socket, const HttpRequest& request) -> boost::asio::awaitable<void>
         {
-            if (!method_handlers.contains(request.method) || !get_path_handlers.contains(request.path))
+            if (!path_handlers.contains(request.path))
             {
                 const HttpResponse response{request.version, "404 Not Found", "Not Found"};
                 co_await response.Write(socket);
                 co_return;
             }
-            co_await method_handlers.at(request.method)(socket, request);
+            co_await path_handlers.at(request.path)(socket, request);
         }
     } // namespace response_handler
 } // namespace aych
