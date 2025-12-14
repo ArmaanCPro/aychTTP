@@ -2,7 +2,9 @@
 
 #include <iostream>
 #include <thread>
+
 #include "response_handler.h"
+#include "http_request.h"
 
 #include <coroutine>
 #include <boost/asio/awaitable.hpp>

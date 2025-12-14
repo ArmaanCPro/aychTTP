@@ -3,9 +3,10 @@
 #include <boost/asio.hpp>
 #include <boost/asio/awaitable.hpp>
 
+#include "http_request.h"
+
 namespace aych
 {
-    struct HttpRequest;
     using boost::asio::ip::tcp;
 
     namespace response_handler

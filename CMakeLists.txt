@@ -23,6 +23,7 @@ target_sources(aychTTP PRIVATE
     PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/tcp_server.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/response_handler.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/http_request.h"
 )
 
 target_compile_features(aychTTP PUBLIC cxx_std_23)
