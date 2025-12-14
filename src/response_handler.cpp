@@ -30,25 +30,21 @@ namespace aych
             int status{0};
             std::string status_line{};
             std::string body{};
-            mutable std::map<std::string, std::string> headers{};
+            std::map<std::string, std::string> headers{
+                {"Content-Type", "text/plain; charset=utf-8"},
+                {"Access-Control-Allow-Origin", "*"}
+            };
         public:
             HttpResponse() = default;
 
             auto set_version(std::string new_version) -> HttpResponse& { this->version = std::move(new_version); return *this; }
             auto set_status(int new_status, std::string new_status_line) -> HttpResponse& { this->status = new_status; this->status_line = std::move(new_status_line); return *this; }
             auto set_header(std::string header, std::string value) -> HttpResponse& { headers[std::move(header)] = std::move(value); return *this; }
-            auto set_body(std::string new_body) -> HttpResponse& { this->body = std::move(new_body); return *this; }
+            auto set_body(std::string new_body) -> HttpResponse& { this->body = std::move(new_body); this->headers["Content-Length"] = std::to_string(body.length()); return *this; }
 
             auto write(tcp::socket& socket) const -> boost::asio::awaitable<void>
             {
                 std::string message = version + ' ' + std::to_string(status) + ' ' + status_line + "\r\n";
-
-                if (!headers.contains("Content-Type"))
-                    headers["Content-Type"] = "text/plain; charset=utf-8";
-                if (!headers.contains("Content-Length"))
-                    headers["Content-Length"] = std::to_string(body.size());
-                if (!headers.contains("Access-Control-Allow-Origin"))
-                    headers["Access-Control-Allow-Origin"] = "*";
 
                 for (const auto& [key, value] : headers)
                 {
