@@ -1,19 +1,16 @@
-#pragma once
+module;
 
-#include <boost/asio.hpp>
+#include "asio_helper.h"
+
+export module aych:tcp_server;
+
+import :http_request;
 
 namespace aych
 {
     using boost::asio::ip::tcp;
 
-    struct HttpRequest
-    {
-        std::string method;
-        std::string path;
-        std::string version;
-    };
-
-    class tcp_server
+    export class tcp_server
     {
     public:
         tcp_server(uint32_t port);
