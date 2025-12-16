@@ -2,6 +2,8 @@
 
 C++ HTTP server primarily for HTMX.
 
+Read the [2 part blog series](https://www.amn.sh/blog/2025-12-14-http-server-in-cpp) for an in-depth tutorial on HTTP in C++.
+
 There's a suprisingly low number of HTMX servers written in low-level C++. Or HTTP servers in general. Most that I've seen use something like Drogon or Boost.Beast (both are phenomenal libraries).
 At this point in the project, the only major features left are architectural improvements and testing.
 
